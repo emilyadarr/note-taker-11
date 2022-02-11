@@ -1,21 +1,52 @@
 const router = require('express').Router();
-const { notes } = require('../db/db.json');
+const fs = require('fs');
+const notesDB = require('../db/db.json');
+// const store = require('../db/store');
 
 router.get('/notes', (req, res) => {
-  let results = notes;
-  res.json(results);
+  let notes = fs.readFileSync('./db/db.json', 'utf8');
+
+  res.json(JSON.parse(notes));
 });
+// res.json(notes)
 
 router.post('/notes', (req, res) => {
-  //req.body.id = notes.length.toString();
+  let notes = fs.readFileSync('./db/db.json', 'utf8');
+  const newNote = {
+    ...req.body,
+    id: notes.length.toString()   
+  };
 
-  if (!req.body) {
-    res.status(400).send('Note is not properly formatted');
-  } else {
-    
-  }
+  const parsedNotes = JSON.parse(notes);
+  parsedNotes.push(newNote);
+
+  fs.writeFile('./db/db.json', JSON.stringify(parsedNotes, null, 2),
+  (err, text) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    console.log("New note added!")
+  });
+  res.json(newNote);
 });
 
 // TODO: Add delete route
+router.delete('/notes/:id', (req, res) => {
+  let notes = fs.readFileSync('./db/db.json', 'utf8');
+  const parsedNotes = JSON.parse(notes);
 
-module.exports  = router;
+  const updatedNotes = parsedNotes.filter((note) => {
+    return note.id !== req.params.id;
+  });
+
+  fs.writeFile('./db/db.json', JSON.stringify(updatedNotes),(err, text) => {
+    if (err) {
+      console.log(err);
+      return;
+    }
+  });
+  res.json(updatedNotes);
+});
+
+module.exports = router;
