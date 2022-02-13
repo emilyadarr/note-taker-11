@@ -1,19 +1,20 @@
 const router = require('express').Router();
 const fs = require('fs');
-const notesDB = require('../db/db.json');
-// const store = require('../db/store');
+// const notesDB = require('../db/db.json');
 
+// GET notes from database
 router.get('/notes', (req, res) => {
   let notes = fs.readFileSync('./db/db.json', 'utf8');
 
   res.json(JSON.parse(notes));
 });
-// res.json(notes)
 
+// POST new note and add to db
 router.post('/notes', (req, res) => {
   let notes = fs.readFileSync('./db/db.json', 'utf8');
   const newNote = {
     ...req.body,
+    // add id to use when deleting notes
     id: notes.length.toString()   
   };
 
@@ -31,7 +32,7 @@ router.post('/notes', (req, res) => {
   res.json(newNote);
 });
 
-// TODO: Add delete route
+// DELETE note from db
 router.delete('/notes/:id', (req, res) => {
   let notes = fs.readFileSync('./db/db.json', 'utf8');
   const parsedNotes = JSON.parse(notes);
@@ -45,6 +46,7 @@ router.delete('/notes/:id', (req, res) => {
       console.log(err);
       return;
     }
+    console.log('Note deleted!')
   });
   res.json(updatedNotes);
 });
